@@ -22,10 +22,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		cmd = strings.TrimSuffix(cmd, "\n")
+		cmd = strings.TrimSpace(cmd)
 
 		if (strings.ToLower(cmd) == "exit") {
-			os.Exit(0)
+			break
 		}
 
 		fmt.Printf("%v: command not found\n", cmd)
