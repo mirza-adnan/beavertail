@@ -11,15 +11,18 @@ import (
 var _ = fmt.Print
 
 func main() {
-	// TODO: Uncomment the code below to pass the first stage
-	fmt.Print("$ ")
+	for {
+		fmt.Print("$ ")
 
-	cmd, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	cmd = strings.TrimSuffix(cmd, "\n")
-	if (err != nil) {
-		fmt.Fprintln(os.Stderr, "Error reading input:", err)
-		os.Exit(1)
+		cmd, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		if (err != nil) {
+			fmt.Fprintln(os.Stderr, "Error reading input:", err)
+			os.Exit(1)
+		}
+
+		cmd = strings.TrimSuffix(cmd, "\n")
+		fmt.Printf("%v: command not found\n", cmd)
 	}
 
-	fmt.Printf("%v: command not found\n", cmd)
+	
 }
