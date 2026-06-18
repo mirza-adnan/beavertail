@@ -23,6 +23,11 @@ func main() {
 		}
 
 		cmd = strings.TrimSuffix(cmd, "\n")
+
+		if (strings.ToLower(cmd) == "exit") {
+			os.Exit(0)
+		}
+
 		fmt.Printf("%v: command not found\n", cmd)
 	}
 }
