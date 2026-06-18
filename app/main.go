@@ -16,18 +16,25 @@ func main() {
 	for {
 		fmt.Print("$ ")
 
-		var cmd, err = reader.ReadString('\n')
+		var cmdline, err = reader.ReadString('\n')
 		if (err != nil) {
 			fmt.Fprintln(os.Stderr, "Error reading input:", err)
 			os.Exit(1)
 		}
 
-		cmd = strings.TrimSpace(cmd)
-
+		cmdline = strings.TrimSpace(cmdline)
+		var cmdParts = strings.SplitN(cmdline, " ", 2)
+		var cmd = cmdParts[0]
+		
 		if (strings.ToLower(cmd) == "exit") {
 			break
+		} else if (cmd == "echo") {
+			if (len(cmdParts) > 1) {
+				fmt.Println(cmdParts[1])
+			}
+		} else {
+			fmt.Printf("%v: command not found\n", cmd)
 		}
 
-		fmt.Printf("%v: command not found\n", cmd)
 	}
 }
