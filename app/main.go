@@ -13,5 +13,5 @@ func main() {
 	fmt.Print("$ ")
 	fmt.Scanln(&cmd)
 
-	fmt.Printf("%v: %v command not found", cmd, cmd)
+	fmt.Printf("%v: command not found", cmd)
 }
