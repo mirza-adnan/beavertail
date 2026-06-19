@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-// Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
-var _ = fmt.Print
-
 func main() {
 	var reader = bufio.NewReader(os.Stdin) 
 	var builtins = []string{"echo", "exit", "type"}
+	var PATH = os.Getenv("PATH")
+	var pathList = strings.Split(PATH, ":")
+
 	for {
 		fmt.Print("$ ")
 
@@ -27,7 +27,7 @@ func main() {
 		var cmdParts = strings.SplitN(cmdline, " ", 2)
 		var cmd = cmdParts[0]
 		
-		if (strings.ToLower(cmd) == "exit") {
+		if (cmd == "exit") {
 			break
 		} else if (cmd == "echo") {
 			if (len(cmdParts) > 1) {
@@ -38,12 +38,31 @@ func main() {
 				if (slices.Contains(builtins, cmdParts[1])) {
 					fmt.Printf("%v is a shell builtin\n", cmdParts[1])
 				} else {
-					fmt.Printf("%v: not found\n", cmdParts[1])
+					var found = false
+					for _, path := range pathList {
+						var dirFiles, _ = os.ReadDir(path)
+
+						for _, dirFile := range dirFiles {
+							if (!dirFile.IsDir() && dirFile.Name() == cmdParts[1]) {
+								var fileInfo, _ = os.Stat(fmt.Sprintf("%v/%v", path, dirFile.Name()))
+								if (fileInfo.Mode() & 1 > 0) {
+									fmt.Printf("%v is %v/%v\n", cmdParts[1], path, cmdParts[1])
+									found = true
+									break
+								}
+							}
+						}
+						if (found) {
+							break
+						}
+					}
+					if (!found) {
+						fmt.Printf("%v: not found\n", cmdParts[1])
+					}
 				}
 			}
 		} else {
 			fmt.Printf("%v: command not found\n", cmd)
 		}
-
 	}
 }
