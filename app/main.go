@@ -17,11 +17,13 @@ func main() {
 	for {
 		fmt.Print("$ ")
 
-		var cmdline, err = reader.ReadString('\n')
+		var cmdline, err = reader.ReadString('\n')  // includes the newline character
 		if (err != nil) {
 			fmt.Fprintln(os.Stderr, "Error reading input:", err)
 			os.Exit(1)
 		}
+
+		cmdline = strings.TrimSpace(cmdline)
 
 		if (cmdline == "") {
 			continue
