@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
+var builtins = []string{"echo", "exit", "type"}
+
 func main() {
 	var reader = bufio.NewReader(os.Stdin) 
-	var builtins = []string{"echo", "exit", "type"}
-	var PATH = os.Getenv("PATH")
-	var pathList = strings.Split(PATH, ":")
+	var pathList = getPathList()
 
 	for {
 		fmt.Print("$ ")
@@ -23,46 +23,96 @@ func main() {
 			os.Exit(1)
 		}
 
-		cmdline = strings.TrimSpace(cmdline)
-		var cmdParts = strings.SplitN(cmdline, " ", 2)
-		var cmd = cmdParts[0]
-		
-		if (cmd == "exit") {
+		if (cmdline == "") {
+			continue
+		} else if (cmdline == "exit") {
 			break
-		} else if (cmd == "echo") {
-			if (len(cmdParts) > 1) {
-				fmt.Println(cmdParts[1])
-			}
-		} else if (cmd == "type") {
-			if (len(cmdParts) > 1) {
-				if (slices.Contains(builtins, cmdParts[1])) {
-					fmt.Printf("%v is a shell builtin\n", cmdParts[1])
-				} else {
-					var found = false
-					for _, path := range pathList {
-						var dirFiles, _ = os.ReadDir(path)
+		}
 
-						for _, dirFile := range dirFiles {
-							if (!dirFile.IsDir() && dirFile.Name() == cmdParts[1]) {
-								var fileInfo, _ = os.Stat(fmt.Sprintf("%v/%v", path, dirFile.Name()))
-								if (fileInfo.Mode() & 1 > 0) {
-									fmt.Printf("%v is %v/%v\n", cmdParts[1], path, cmdParts[1])
-									found = true
-									break
-								}
-							}
-						}
-						if (found) {
-							break
-						}
-					}
-					if (!found) {
-						fmt.Printf("%v: not found\n", cmdParts[1])
-					}
-				}
-			}
+		executeCommand(cmdline, &pathList)
+	}
+}
+
+func getPathList() []string {
+	return strings.Split(os.Getenv("PATH"), ":")
+}
+
+func parseCommand(cmdline string) (string, string) {
+	cmdline = strings.TrimSpace(cmdline)
+	var parts = strings.SplitN(cmdline," ", 2)
+	var cmd = parts[0]
+	var args string
+	if (len(parts) > 1) {
+		args = parts[1]
+	}
+
+	return cmd, args
+}
+
+func executeCommand(cmdline string, pathList *[]string) {
+	var cmd, args = parseCommand(cmdline)
+	
+	switch cmd {
+	case "echo":
+		echoCommand(args)
+	case "type":
+		typeCommand(args, pathList)
+	default:
+		fmt.Printf("%v: command not found\n", cmd)
+	}
+
+}
+
+func echoCommand(args string) {
+	if (args != "") {
+		fmt.Println(args)
+	}
+}
+
+func typeCommand(args string, pathList *[]string) {
+	if (args == "") {
+		return 
+	}
+
+	var parts = strings.Split(args, " ")
+	if (len(parts) > 1) {
+		fmt.Println("type: too many arguments")
+	}
+
+	if (slices.Contains(builtins, args)) {
+		fmt.Printf("%v is a shell builtin\n", args)
+	} else {
+		var filePath = findBinary(args, pathList)
+		if (filePath == "") {
+			fmt.Printf("%v: not found\n", args)
 		} else {
-			fmt.Printf("%v: command not found\n", cmd)
+			fmt.Printf("%v is %v\n", args, filePath)
 		}
 	}
+}
+
+func findBinary(name string, pathList *[]string) string {
+	for _, path := range(*pathList) {
+		var contents, _ = os.ReadDir(path)
+		
+		for _, f := range(contents) {
+			if (!f.IsDir() && f.Name() == name) {
+				var filePath = fmt.Sprintf("%v/%v", path, name)
+				if (isExecutable(filePath)) {
+					return filePath
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
+func isExecutable(filePath string) bool {
+	var fileInfo, err = os.Stat(filePath)
+	if (err != nil) {
+		return false
+	}
+
+	return fileInfo.Mode()&1 != 0
 }
