@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var builtins = []string{"echo", "exit", "type"}
+var builtins = []string{"echo", "exit", "type", "pwd"}
 
 func main() {
 	var reader = bufio.NewReader(os.Stdin) 
@@ -60,10 +60,12 @@ func executeCommand(cmdline string, pathList *[]string) {
 		echoCommand(args)
 	case "type":
 		typeCommand(args, pathList)
+	case "pwd":
+		pwdCommand()
 	default:
 		var filePath = findBinary(cmd, pathList)
-		if filePath != "" {
-			if isExecutable(filePath) {
+		if (filePath != "") {
+			if (isExecutable(filePath)) {
 				var argsParts = strings.Fields(args)  // using Fields instead because split returns [""] for empty string
 				
 				var cmdExec = exec.Command(cmd, argsParts...)
@@ -107,6 +109,15 @@ func typeCommand(args string, pathList *[]string) {
 		}
 	}
 }
+
+func pwdCommand() {
+	var pwd, err = os.Getwd()
+	if (err != nil) {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(pwd)
+} 
 
 func findBinary(name string, pathList *[]string) string {
 	for _, path := range(*pathList) {
