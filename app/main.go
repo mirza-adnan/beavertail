@@ -67,12 +67,10 @@ func executeCommand(cmdline string, pathList *[]string) {
 				var argsParts = strings.Split(args, " ")
 				
 				var cmdExec = exec.Command(cmd, argsParts...)
-				var out, err = cmdExec.CombinedOutput()
-				if err != nil {
-					return
-				}
+				cmdExec.Stdout = os.Stdout
+				cmdExec.Stderr = os.Stderr
 
-				fmt.Println(string(out))
+				cmdExec.Run()
 			} else {
 				fmt.Printf("%v: Permission denied", filePath)
 			}
