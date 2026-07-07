@@ -62,6 +62,8 @@ func executeCommand(cmdline string, pathList *[]string) {
 		typeCommand(args, pathList)
 	case "pwd":
 		pwdCommand()
+	case "cd":
+		cdCommand(args)
 	default:
 		var filePath = findBinary(cmd, pathList)
 		if (filePath != "") {
@@ -119,6 +121,21 @@ func pwdCommand() {
 	fmt.Println(pwd)
 } 
 
+func cdCommand(args string) {
+	if (strings.Contains(args, " ")) {
+		fmt.Println("cd: too many arguments")
+		return
+	}
+
+	var _, err = os.Stat(args)
+	if (os.IsNotExist(err)) {  // err is specifically caused by not existing
+		fmt.Printf("cd: %v: No such file or directory\n", args)
+		return
+	}
+
+	os.Chdir(args)
+}
+
 func findBinary(name string, pathList *[]string) string {
 	for _, path := range(*pathList) {
 		var contents, _ = os.ReadDir(path)
@@ -138,6 +155,7 @@ func findBinary(name string, pathList *[]string) string {
 
 func isExecutable(filePath string) bool {
 	var fileInfo, err = os.Stat(filePath)
+
 	if (err != nil) {
 		return false
 	}
