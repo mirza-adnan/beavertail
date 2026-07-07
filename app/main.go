@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"slices"
 	"strings"
 )
@@ -60,7 +61,24 @@ func executeCommand(cmdline string, pathList *[]string) {
 	case "type":
 		typeCommand(args, pathList)
 	default:
-		fmt.Printf("%v: command not found\n", cmd)
+		var filePath = findBinary(cmd, pathList)
+		if filePath != "" {
+			if isExecutable(filePath) {
+				var argsParts = strings.Split(args, " ")
+				
+				var cmdExec = exec.Command(cmd, argsParts...)
+				var out, err = cmdExec.CombinedOutput()
+				if err != nil {
+					return
+				}
+
+				fmt.Println(string(out))
+			} else {
+				fmt.Printf("%v: Permission denied", filePath)
+			}
+		} else {
+			fmt.Printf("%v: command not found\n", cmd)
+		}
 	}
 
 }
