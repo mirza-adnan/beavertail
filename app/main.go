@@ -64,13 +64,12 @@ func executeCommand(cmdline string, pathList *[]string) {
 		var filePath = findBinary(cmd, pathList)
 		if filePath != "" {
 			if isExecutable(filePath) {
-				var argsParts = strings.Split(args, " ")
+				var argsParts = strings.Fields(args)  // using Fields instead because split returns [""] for empty string
 				
 				var cmdExec = exec.Command(cmd, argsParts...)
-				cmdExec.Stdout = os.Stdout
-				cmdExec.Stderr = os.Stderr
+				var out, _ = cmdExec.CombinedOutput()
 
-				cmdExec.Run()
+				fmt.Printf("%s", out)
 			} else {
 				fmt.Printf("%v: Permission denied", filePath)
 			}
